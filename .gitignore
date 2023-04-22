@@ -35,6 +35,5 @@ node_modules
 .prettierrc
 
 # Optional REPL history
-.DS_Store
 .idea
 .vscode
