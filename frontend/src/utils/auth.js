@@ -1,10 +1,10 @@
-export const baseUrl = "https://auth.nomoreparties.co/";
+export const baseUrl = 'http://localhost:3000/';
 
 export const register = (userData) => {
   return fetch(`${baseUrl}signup`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       password: userData.password,
@@ -15,9 +15,9 @@ export const register = (userData) => {
 
 export const login = (userData) => {
   return fetch(`${baseUrl}signin`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       password: userData.password,
@@ -26,12 +26,13 @@ export const login = (userData) => {
   }).then(checkResponse);
 };
 
-export const checkToken = (jwt) => {
+export const checkToken = () => {
+  const token = localStorage.getItem('jwt');
   return fetch(`${baseUrl}users/me`, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
   }).then(checkResponse);
 };

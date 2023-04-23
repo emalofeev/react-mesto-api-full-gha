@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const { errors } = require('celebrate');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -8,6 +9,7 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { PORT, DB_ADDRESS } = require('./config');
 
 const app = express();
+app.use(cors());
 
 mongoose.connect(DB_ADDRESS);
 
