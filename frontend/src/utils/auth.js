@@ -31,8 +31,7 @@ export const login = (userData) => {
     });
 };
 
-export const checkToken = () => {
-  const token = localStorage.getItem('jwt');
+export const checkToken = (token) => {
   return fetch(`${baseUrl}users/me`, {
     method: 'GET',
     headers: {
