@@ -23,7 +23,12 @@ export const login = (userData) => {
       password: userData.password,
       email: userData.email,
     }),
-  }).then(checkResponse);
+  })
+    .then(checkResponse)
+    .then((data) => {
+      localStorage.setItem('jtw', data.token);
+      return data;
+    });
 };
 
 export const checkToken = () => {
@@ -32,7 +37,7 @@ export const checkToken = () => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   }).then(checkResponse);
 };
