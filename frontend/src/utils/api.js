@@ -1,5 +1,5 @@
 class Api {
-  constructor({ baseUrl, headers }) {
+  constructor({ baseUrl }) {
     this._baseUrl = baseUrl;
   }
 
@@ -40,7 +40,7 @@ class Api {
       },
       body: JSON.stringify({
         name: data.name,
-        about: data.about
+        about: data.about,
       }),
     })
       .then(this._getResponseData)
@@ -49,7 +49,7 @@ class Api {
       });
   }
 
-  addCard({name, link}) {
+  addCard({ name, link }) {
     const token = localStorage.getItem('jwt');
     return fetch(`${this._baseUrl}cards`, {
       method: 'POST',
@@ -57,7 +57,7 @@ class Api {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({name, link}),
+      body: JSON.stringify({ name, link }),
     })
       .then(this._getResponseData)
       .catch((err) => {
@@ -119,7 +119,7 @@ class Api {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        avatar: data.avatar
+        avatar: data.avatar,
       }),
     })
       .then(this._getResponseData)
