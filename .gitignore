@@ -33,6 +33,7 @@ node_modules
 # Optional npm cache directory
 .npm
 .prettierrc
+.env
 
 # Optional REPL history
 .idea
