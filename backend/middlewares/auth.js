@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const Unauthorized = require('../errors/Unauthorized');
 
 const handleAuthError = () => {
-  throw new Unauthorized('Передан неверный логин или пароль');
+  throw new Unauthorized('Необходима авторизация');
 };
 
 const extractBearerToken = (header) => header.replace('Bearer ', '');
