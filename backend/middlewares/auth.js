@@ -12,7 +12,8 @@ module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return handleAuthError(res);
+    handleAuthError(req, res, next);
+    return;
   }
 
   const token = extractBearerToken(authorization);
@@ -24,10 +25,11 @@ module.exports = (req, res, next) => {
       NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
     );
   } catch (err) {
-    return handleAuthError(res);
+    handleAuthError(req, res, next);
+    return;
   }
 
   req.user = payload;
 
-  return next();
+  next();
 };
