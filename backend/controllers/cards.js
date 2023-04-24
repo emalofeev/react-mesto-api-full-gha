@@ -3,7 +3,7 @@ const Card = require('../models/card');
 const BadRequest = require('../errors/BadRequest');
 const NotFound = require('../errors/NotFound');
 const Forbidden = require('../errors/Forbidden');
-const { statusCodeCreated } = require('../utils/constans');
+const { STATUS_CODE_CREATED } = require('../utils/constans');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -20,7 +20,7 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => {
       card
         .populate('owner')
-        .then(() => res.status(statusCodeCreated).send(card))
+        .then(() => res.status(STATUS_CODE_CREATED).send(card))
         .catch(next);
     })
     .catch((err) => {
@@ -39,13 +39,13 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         next(new NotFound('Карточка по указанному _id не найдена'));
-        return;
+        return {};
       }
       if (card.owner._id.toString() !== req.user._id) {
         next(new Forbidden('Попытка удалить чужую карточку'));
-        return;
+        return {};
       }
-      Card.deleteOne().then(res.send(card));
+      return Card.deleteOne().then(res.send(card));
     })
     .catch(next);
 };
