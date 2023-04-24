@@ -31,11 +31,11 @@ router.post(
   login,
 );
 
-router.use(auth);
-router.use('/users', usersRouter);
-router.use('/cards', cardsRouter);
 router.use('*', (req, res, next) => {
   next(new NotFound('Страница не найдена'));
 });
+router.use(auth);
+router.use('/users', usersRouter);
+router.use('/cards', cardsRouter);
 
 module.exports = router;
