@@ -8,7 +8,7 @@
 
 ## Ссылки на проект
 
-IP-адрес 158.160.44.214
+IP 158.160.44.214
 
 Frontend https://emalofeev.nomoredomains.monster/
 
