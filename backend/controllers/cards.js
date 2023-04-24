@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Card = require('../models/card');
 const BadRequest = require('../errors/BadRequest');
 const NotFound = require('../errors/NotFound');
@@ -6,6 +7,7 @@ const { statusCodeCreated } = require('../utils/constans');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
+    .populate(['owner', 'likes'])
     .then((cards) => res.send(cards))
     .catch(next);
 };
@@ -17,7 +19,7 @@ module.exports.createCard = (req, res, next) => {
   Card.create({ name, link, owner })
     .then((card) => res.status(statusCodeCreated).send(card))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof mongoose.Error.ValidationError) {
         next(
           new BadRequest('Переданы некорректные данные при создании карточки'),
         );
@@ -29,6 +31,7 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
         next(new NotFound('Карточка по указанному _id не найдена'));
@@ -49,6 +52,7 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
         return next(new NotFound('Карточка по указанному _id не найдена'));
@@ -56,7 +60,7 @@ module.exports.likeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err instanceof mongoose.Error.CastError) {
         next(new BadRequest('Передан несуществующий _id карточки'));
         return;
       }
@@ -70,6 +74,7 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
         return next(new NotFound('Карточка по указанному _id не найдена'));
@@ -77,7 +82,7 @@ module.exports.dislikeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err instanceof mongoose.Error.CastError) {
         next(new BadRequest('Передан несуществующий _id карточки'));
         return;
       }

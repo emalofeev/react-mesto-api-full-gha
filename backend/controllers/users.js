@@ -1,10 +1,12 @@
-const { JWT_SECRET, NODE_ENV } = process.env;
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequest = require('../errors/BadRequest');
 const NotFound = require('../errors/NotFound');
 const ConflictingRequest = require('../errors/ConflictingRequest');
+
+const { JWT_SECRET, NODE_ENV } = process.env;
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -21,7 +23,7 @@ module.exports.getUser = (req, res, next) => {
       return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err instanceof mongoose.Error.CastError) {
         next(new BadRequest('Переданы некорректные данные пользователя'));
         return;
       }
@@ -50,7 +52,7 @@ module.exports.createUser = (req, res, next) => {
       res.send(objUser);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof mongoose.Error.ValidationError) {
         next(
           new BadRequest(
             'Переданы некорректные данные при создании пользователя',
@@ -80,7 +82,7 @@ module.exports.updateProfileUser = (req, res, next) => {
   )
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof mongoose.Error.ValidationError) {
         next(
           new BadRequest('Переданы некорректные данные при обновлении профиля'),
         );
@@ -100,7 +102,7 @@ module.exports.updateAvatarUser = (req, res, next) => {
   )
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof mongoose.Error.ValidationError) {
         next(
           new BadRequest('Переданы некорректные данные при обновлении аватара'),
         );
