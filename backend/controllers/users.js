@@ -8,14 +8,8 @@ const ConflictingRequest = require('../errors/ConflictingRequest');
 
 const { JWT_SECRET, NODE_ENV } = process.env;
 
-module.exports.getUsers = (req, res, next) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch(next);
-};
-
-module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.userId)
+function findUser(res, next, userId) {
+  return User.findById(userId)
     .then((user) => {
       if (!user) {
         return next(new NotFound('Пользователь по указанному _id не найден'));
@@ -29,12 +23,39 @@ module.exports.getUser = (req, res, next) => {
       }
       next(err);
     });
+}
+
+function updateUser(req, res, next, property) {
+  User.findByIdAndUpdate(req.user._id, property, {
+    new: true,
+    runValidators: true,
+  })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(
+          new BadRequest('Переданы некорректные данные при обновлении профиля/аватара'),
+        );
+        return;
+      }
+      next(err);
+    });
+}
+
+module.exports.getUsers = (req, res, next) => {
+  User.find({})
+    .then((users) => res.send(users))
+    .catch(next);
+};
+
+module.exports.getUser = (req, res, next) => {
+  const { userId } = req.params;
+  return findUser(res, next, userId);
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
-  User.findById(req.user._id)
-    .then((user) => res.send(user))
-    .catch(next);
+  const { _id } = req.user;
+  return findUser(res, next, _id);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -44,7 +65,11 @@ module.exports.createUser = (req, res, next) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
     }))
     .then((user) => {
       const objUser = user.toObject();
@@ -74,42 +99,12 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.updateProfileUser = (req, res, next) => {
   const { name, about } = req.body;
-
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    { new: true, runValidators: true },
-  )
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        next(
-          new BadRequest('Переданы некорректные данные при обновлении профиля'),
-        );
-        return;
-      }
-      next(err);
-    });
+  return updateUser(req, res, next, { name, about });
 };
 
 module.exports.updateAvatarUser = (req, res, next) => {
   const { avatar } = req.body;
-
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        next(
-          new BadRequest('Переданы некорректные данные при обновлении аватара'),
-        );
-        return;
-      }
-      next(err);
-    });
+  return updateUser(req, res, next, { avatar });
 };
 
 module.exports.login = (req, res, next) => {
