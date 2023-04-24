@@ -2,8 +2,8 @@ const { JWT_SECRET, NODE_ENV } = process.env;
 const jwt = require('jsonwebtoken');
 const Unauthorized = require('../errors/Unauthorized');
 
-const handleAuthError = () => {
-  throw new Unauthorized('Необходима авторизация');
+const handleAuthError = (req, res, next) => {
+  next(new Unauthorized('Необходима авторизация'));
 };
 
 const extractBearerToken = (header) => header.replace('Bearer ', '');

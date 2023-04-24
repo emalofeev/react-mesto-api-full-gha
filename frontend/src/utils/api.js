@@ -130,5 +130,5 @@ class Api {
 }
 
 export const api = new Api({
-  baseUrl: 'https://api.emalofeev.nomoredomains.monster/',
+  baseUrl: 'http://localhost:3000/',
 });

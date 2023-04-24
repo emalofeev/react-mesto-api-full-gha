@@ -1,15 +1,13 @@
 const Card = require('../models/card');
 const BadRequest = require('../errors/BadRequest');
 const NotFound = require('../errors/NotFound');
-const InternalServerError = require('../errors/InternalServerError');
 const Forbidden = require('../errors/Forbidden');
+const { statusCodeCreated } = require('../utils/constans');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch(() => {
-      next(new InternalServerError('На сервере произошла ошибка'));
-    });
+    .catch(next);
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -17,7 +15,7 @@ module.exports.createCard = (req, res, next) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .then((card) => res.send(card))
+    .then((card) => res.status(statusCodeCreated).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(
@@ -25,7 +23,7 @@ module.exports.createCard = (req, res, next) => {
         );
         return;
       }
-      next(new InternalServerError('На сервере произошла ошибка'));
+      next(err);
     });
 };
 
@@ -34,12 +32,13 @@ module.exports.deleteCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         next(new NotFound('Карточка по указанному _id не найдена'));
+        return;
       }
-      if (card.owner._id.toString() === req.user._id) {
-        Card.findByIdAndRemove(req.params.cardId).then(res.send(card));
-      } else {
+      if (card.owner._id.toString() !== req.user._id) {
         next(new Forbidden('Попытка удалить чужую карточку'));
+        return;
       }
+      Card.deleteOne().then(res.send(card));
     })
     .catch(next);
 };
@@ -48,7 +47,7 @@ module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true, runValidators: true },
+    { new: true },
   )
     .then((card) => {
       if (!card) {
@@ -57,17 +56,11 @@ module.exports.likeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(
-          new BadRequest('Переданы некорректные данные для постановки лайка'),
-        );
-        return;
-      }
       if (err.name === 'CastError') {
         next(new BadRequest('Передан несуществующий _id карточки'));
         return;
       }
-      next(new InternalServerError('На сервере произошла ошибка'));
+      next(err);
     });
 };
 
@@ -75,7 +68,7 @@ module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true, runValidators: true },
+    { new: true },
   )
     .then((card) => {
       if (!card) {
@@ -84,14 +77,10 @@ module.exports.dislikeCard = (req, res, next) => {
       return res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequest('Переданы некорректные данные для снятия лайка'));
-        return;
-      }
       if (err.name === 'CastError') {
         next(new BadRequest('Передан несуществующий _id карточки'));
         return;
       }
-      next(new InternalServerError('На сервере произошла ошибка'));
+      next(err);
     });
 };

@@ -5,14 +5,11 @@ const User = require('../models/user');
 const BadRequest = require('../errors/BadRequest');
 const NotFound = require('../errors/NotFound');
 const ConflictingRequest = require('../errors/ConflictingRequest');
-const InternalServerError = require('../errors/InternalServerError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => {
-      next(new InternalServerError('На сервере произошла ошибка'));
-    });
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -28,20 +25,14 @@ module.exports.getUser = (req, res, next) => {
         next(new BadRequest('Переданы некорректные данные пользователя'));
         return;
       }
-      next(new InternalServerError('На сервере произошла ошибка'));
+      next(err);
     });
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequest('Пользователь по указанному _id не найден'));
-        return;
-      }
-      next(new InternalServerError('На сервере произошла ошибка'));
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -53,12 +44,11 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.send({
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-      email: user.email,
-    }))
+    .then((user) => {
+      const objUser = user.toObject();
+      delete objUser.password;
+      res.send(objUser);
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(
@@ -76,7 +66,7 @@ module.exports.createUser = (req, res, next) => {
         );
         return;
       }
-      next(new InternalServerError('На сервере произошла ошибка'));
+      next(err);
     });
 };
 
@@ -96,11 +86,7 @@ module.exports.updateProfileUser = (req, res, next) => {
         );
         return;
       }
-      if (err.name === 'CastError') {
-        next(new BadRequest('Пользователь по указанному _id не найден'));
-        return;
-      }
-      next(new InternalServerError('На сервере произошла ошибка'));
+      next(err);
     });
 };
 
@@ -120,11 +106,7 @@ module.exports.updateAvatarUser = (req, res, next) => {
         );
         return;
       }
-      if (err.name === 'CastError') {
-        next(new BadRequest('Пользователь по указанному _id не найден'));
-        return;
-      }
-      next(new InternalServerError('На сервере произошла ошибка'));
+      next(err);
     });
 };
 

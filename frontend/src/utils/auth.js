@@ -1,4 +1,4 @@
-export const baseUrl = 'https://api.emalofeev.nomoredomains.monster/';
+export const baseUrl = 'http://localhost:3000/';
 
 export const register = (userData) => {
   return fetch(`${baseUrl}signup`, {

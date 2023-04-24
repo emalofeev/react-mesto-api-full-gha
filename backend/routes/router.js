@@ -3,7 +3,7 @@ const { celebrate, Joi } = require('celebrate');
 const usersRouter = require('./users');
 const cardsRouter = require('./cards');
 const auth = require('../middlewares/auth');
-const regex = require('../utils/constans');
+const { urlRegex } = require('../utils/constans');
 const { login, createUser } = require('../controllers/users');
 const NotFound = require('../errors/NotFound');
 
@@ -13,7 +13,7 @@ router.post(
     body: Joi.object().keys({
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
-      avatar: Joi.string().pattern(regex),
+      avatar: Joi.string().pattern(urlRegex),
       email: Joi.string().required().email(),
       password: Joi.string().required(),
     }),
@@ -32,10 +32,10 @@ router.post(
 );
 
 router.use(auth);
-router.use(usersRouter);
-router.use(cardsRouter);
-router.use('*', () => {
-  throw new NotFound('Страница не найдена');
+router.use('/users', usersRouter);
+router.use('/cards', cardsRouter);
+router.use('*', (req, res, next) => {
+  next(new NotFound('Страница не найдена'));
 });
 
 module.exports = router;
