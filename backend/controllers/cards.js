@@ -17,6 +17,7 @@ module.exports.createCard = (req, res, next) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
+    .populate('owner')
     .then((card) => res.status(statusCodeCreated).send(card))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
@@ -31,7 +32,6 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
         next(new NotFound('Карточка по указанному _id не найдена'));
